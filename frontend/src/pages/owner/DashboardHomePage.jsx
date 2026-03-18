@@ -51,7 +51,7 @@ export default function DashboardHomePage() {
             <div className="flex items-center justify-center h-64"><div className="loader" /></div>
           ) : (
             <>
-              {/* ── Top Stats ── */}
+              {/* Top Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-white rounded-2xl p-5 shadow-sm border">
                   <p className="text-4xl font-bold font-display text-ink">{total}</p>
@@ -70,7 +70,7 @@ export default function DashboardHomePage() {
                 ))}
               </div>
 
-              {/* ── 3-Step Status Breakdown ── */}
+              {/* 3-Step Status Breakdown */}
               <div className="grid grid-cols-3 gap-4 mb-8">
                 {STAT_CARDS.map(card => (
                   <Link
@@ -88,7 +88,7 @@ export default function DashboardHomePage() {
                 ))}
               </div>
 
-              {/* ── Recent Requests ── */}
+              {/* Recent Requests */}
               <div className="bg-white rounded-2xl shadow-sm border overflow-hidden mb-6">
                 <div className="flex items-center justify-between px-6 py-4 border-b">
                   <h2 className="font-display text-xl font-bold text-ink">Recent Requests</h2>
@@ -119,7 +119,7 @@ export default function DashboardHomePage() {
                 )}
               </div>
 
-              {/* ── Quick Actions ── */}
+              {/* Quick Actions */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Link to="/owner/requests?status=pending"
                   className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-2xl p-5 text-center font-body font-bold transition-colors">

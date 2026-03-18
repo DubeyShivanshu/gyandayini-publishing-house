@@ -42,7 +42,7 @@ app.use('/api/', limiter);
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/requests', require('./routes/request.routes'));
 app.use('/api/templates', require('./routes/template.routes'));
-app.use('/api/otp', require('./routes/otp.routes'));
+//app.use('/api/otp', require('./routes/otp.routes'));
 app.use('/api/captcha', require('./routes/captcha.routes'));
 app.use('/api/upload', require('./routes/upload.routes'));
 app.use('/api/owner', require('./routes/owner.routes'));

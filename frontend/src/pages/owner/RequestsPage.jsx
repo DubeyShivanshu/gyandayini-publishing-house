@@ -13,7 +13,7 @@ const STATUS_OPTIONS = [
   { value: 'completed',        label: '🎉 Completed',        color: 'border-green-400 text-green-700 hover:bg-green-50' },
 ]
 
-// ─ Download helper
+// Download helper
 const downloadFile = async (url, filename) => {
   try {
     const res = await fetch(url)
@@ -31,10 +31,10 @@ const downloadFile = async (url, filename) => {
   }
 }
 
-// ─ Empty receipt item
+// Empty receipt item
 const emptyItem = () => ({ itemName: '', quantity: 1, pricePerItem: 0 })
 
-// ─ Individual request card
+// Individual request card
 function RequestCard({ req, onUpdate }) {
   const [expanded,   setExpanded]   = useState(false)
   const [notes,      setNotes]      = useState(req.ownerNotes || '')
@@ -50,7 +50,7 @@ function RequestCard({ req, onUpdate }) {
 
   const grandTotal = receiptItems.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.pricePerItem)), 0)
 
-  // ─ Status update 
+  // Status update 
   const updateStatus = async (newStatus) => {
     if (req.status === newStatus) return
     setStatusLoad(true)
@@ -65,7 +65,7 @@ function RequestCard({ req, onUpdate }) {
     }
   }
 
-  // ─ Save notes separately 
+  // Save notes separately 
   const saveNotes = async () => {
     try {
       await api.put(`/owner/requests/${req.requestId}/status`, { status: req.status, ownerNotes: notes })
@@ -75,7 +75,7 @@ function RequestCard({ req, onUpdate }) {
     }
   }
 
-  // ─ Receipt builder 
+  // Receipt builder 
   const addItem = () => setReceiptItems(p => [...p, emptyItem()])
   const removeItem = (i) => setReceiptItems(p => p.filter((_, idx) => idx !== i))
   const updateItem = (i, k, v) => {
@@ -112,7 +112,7 @@ function RequestCard({ req, onUpdate }) {
 
   return (
     <div className="bg-white rounded-2xl border shadow-sm overflow-hidden mb-4">
-      {/* ── Card Header (always visible) ── */}
+      {/* Card Header (always visible) */}
       <div
         className="p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={() => setExpanded(p => !p)}
@@ -138,7 +138,7 @@ function RequestCard({ req, onUpdate }) {
         </div>
       </div>
 
-      {/* ── Expanded Panel ── */}
+      {/* Expanded Panel */}
       {expanded && (
         <div className="border-t bg-gray-50">
           {/* Tab switcher */}
@@ -153,7 +153,7 @@ function RequestCard({ req, onUpdate }) {
             ))}
           </div>
 
-          {/* ── Details Tab ── */}
+          {/* Details Tab */}
           {activeTab === 'details' && (
             <div className="p-5 space-y-5">
 
@@ -275,7 +275,7 @@ function RequestCard({ req, onUpdate }) {
             </div>
           )}
 
-          {/* ── Receipt Tab ── */}
+          {/* Receipt Tab */}
           {activeTab === 'receipt' && (
             <div className="p-5 space-y-4">
               <div className="bg-white rounded-xl border p-5">
@@ -380,7 +380,7 @@ function RequestCard({ req, onUpdate }) {
   )
 }
 
-// ── Main Page ──────────────────────────────────────────────────────────────
+// Main Page
 export default function RequestsPage() {
   const [searchParams] = useSearchParams()
   const [requests,    setRequests]    = useState([])

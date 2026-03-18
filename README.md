@@ -8,8 +8,7 @@ gyandayini/
 │   │   ├── User.model.js         # Users & Owners (role-based)
 │   │   ├── Request.model.js      # All customer requests + receipt
 │   │   ├── Template.model.js     # Card templates with dynamic fields
-│   │   ├── Media.model.js        # Demo/Ad/Rate list images
-│   │   └── OTP.model.js          # Email OTP (auto-expire TTL index)
+│   │   ├── Media.model.js        # Demo/Ad/Rate (auto-expire TTL index)
 │   ├── routes/
 │   │   ├── auth.routes.js        # Signup, login, owner-login
 │   │   ├── request.routes.js     # Submit, track, my requests
@@ -59,7 +58,6 @@ Create a `.env` file in backend using `.env.example` and fill:
 - MONGODB_URI
 - JWT_SECRET
 - CLOUDINARY keys
-- EMAIL credentials
 
 ---
 
@@ -81,11 +79,6 @@ cd backend
 cp .env.example .env 
 # Fill in MongoDB URI, Cloudinary keys, Gmail credentials
 ```
-
-**Gmail OTP Setup:**
-1. Go to `myaccount.google.com` → Security → 2-Step Verification
-2. Scroll to "App passwords" → Create one for "Mail"
-3. Use that 16-char password as `EMAIL_PASS` in `.env`
 
 ### 3. Create Owner Account
 
@@ -128,7 +121,6 @@ Login → Dashboard → Review Requests → Build Receipt (item/qty/price)
 
 | Feature | Status |
 |---------|--------|
-| Email OTP (4-digit, 5min expiry) | ✅ |
 | SVG Captcha verification | ✅ |
 | 3-step order tracking (Pending → Payment Received → Completed) | ✅ |
 | Saved Request IDs box (localStorage) | ✅ |
@@ -152,12 +144,6 @@ POST /api/auth/signup          Customer registration
 POST /api/auth/login           Customer login
 POST /api/auth/owner-login     Owner login
 GET  /api/auth/me              Verify token / get current user
-```
-
-### Email OTP
-```
-POST /api/otp/send-email       Send 4-digit OTP to email
-POST /api/otp/verify-email     Verify OTP (marks used, 5min expiry)
 ```
 
 ### Captcha
@@ -229,12 +215,24 @@ POST /api/upload/docs              Multiple govt docs (up to 5)
 
 ## 🚢 Deployment
 
-### Backend (Railway / Render)
-- Set all `.env` variables in hosting platform
+### Backend (Render)
+- Set all `.env` variables in Render dashboard
 - Entry point: `node server.js`
+- Add `CLIENT_URL` env var pointing to your Vercel frontend URL
 
-### Frontend (Vercel / Netlify)
+### Frontend (Vercel)
+- Add `VITE_API_URL` env var in Vercel dashboard (not needed if using `vercel.json` proxy)
+- Create `frontend/vercel.json` to proxy API calls:
+```json
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://your-backend.onrender.com/api/$1"
+    }
+  ]
+}
+```
 ```bash
 cd frontend && npm run build
-
 ```
