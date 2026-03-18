@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    @apply bg-cream text-ink font-body;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4711e' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-body font-bold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-white hover:bg-cream text-primary-700 border-2 border-primary-600 font-body font-bold py-3 px-6 rounded-lg transition-all duration-200 hover:shadow-md active:scale-95;
+  }
+
+  .btn-outline {
+    @apply border border-primary-500 text-primary-700 hover:bg-primary-50 py-2 px-4 rounded-lg transition-all duration-200 font-body text-sm;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden;
+  }
+
+  .input-field {
+    @apply w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 bg-white font-body text-ink transition-all duration-200;
+  }
+
+  .label {
+    @apply block text-sm font-bold text-gray-700 mb-1 font-body;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-display font-bold text-ink;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold;
+  }
+
+  .status-pending { @apply badge bg-yellow-100 text-yellow-800; }
+  .status-payment_required { @apply badge bg-orange-100 text-orange-800; }
+  .status-payment_received { @apply badge bg-blue-100 text-blue-800; }
+  .status-processing { @apply badge bg-purple-100 text-purple-800; }
+  .status-completed { @apply badge bg-green-100 text-green-800; }
+  .status-cancelled { @apply badge bg-red-100 text-red-800; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f5edd6; }
+::-webkit-scrollbar-thumb { background: #d4711e; border-radius: 3px; }
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.loader {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #d4711e;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  animation: spin-slow 0.8s linear infinite;
+}
