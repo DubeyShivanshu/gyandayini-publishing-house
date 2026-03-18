@@ -42,7 +42,9 @@ export default function OwnerLoginPage() {
               <label className="block text-sm font-bold text-gray-300 mb-1 font-body">Phone Number</label>
               <input
                 className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 placeholder-gray-500 font-body"
-                type="tel" maxLength={10} value={form.phone}
+                type="tel"
+                maxLength={10}
+                value={form.phone}
                 onChange={e => setForm(p => ({ ...p, phone: e.target.value.replace(/\D/g, '') }))}
                 placeholder="Owner phone number"
                 required
@@ -52,18 +54,33 @@ export default function OwnerLoginPage() {
               <label className="block text-sm font-bold text-gray-300 mb-1 font-body">Password</label>
               <input
                 className="w-full bg-white/10 border border-white/20 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 placeholder-gray-500 font-body"
-                type="password" value={form.password}
+                type="password"
+                value={form.password}
                 onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
                 placeholder="Owner password"
                 required
               />
             </div>
-            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2 mt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full flex items-center justify-center gap-2 mt-2"
+            >
               {loading ? <><div className="loader w-4 h-4 border-2" /> Signing In...</> : '🔓 Owner Login'}
             </button>
           </form>
-          <div className="text-center mt-4">
-            <Link to="/" className="text-gray-500 text-xs hover:text-gray-300 font-body">← Back to Website</Link>
+
+          <div className="text-center mt-6 space-y-3">
+            <div>
+              <Link to="/" className="text-gray-500 text-xs hover:text-gray-300 font-body transition-colors">
+                ← Back to Website
+              </Link>
+            </div>
+            <div className="border-t border-white/10 pt-3">
+              <Link to="/signin" className="text-gray-500 text-xs hover:text-gray-300 font-body transition-colors">
+                Customer Login →
+              </Link>
+            </div>
           </div>
         </div>
       </div>
