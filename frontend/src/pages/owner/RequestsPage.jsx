@@ -6,14 +6,12 @@ import api from '../../utils/api.js'
 import toast from 'react-hot-toast'
 import { FiChevronDown, FiChevronUp, FiDownload, FiPlus, FiTrash2, FiSave, FiExternalLink } from 'react-icons/fi'
 
-// Only 3 valid statuses
 const STATUS_OPTIONS = [
   { value: 'pending',          label: '⏳ Pending',          color: 'border-yellow-400 text-yellow-700 hover:bg-yellow-50' },
-  { value: 'payment_received', label: '✅ Payment Received', color: 'border-blue-400 text-blue-700 hover:bg-blue-50'   },
+  { value: 'payment_received', label: '✅ Payment Received', color: 'border-blue-400 text-blue-700 hover:bg-blue-50' },
   { value: 'completed',        label: '🎉 Completed',        color: 'border-green-400 text-green-700 hover:bg-green-50' },
 ]
 
-// Download helper
 const downloadFile = async (url, filename) => {
   try {
     const res = await fetch(url)
@@ -26,31 +24,26 @@ const downloadFile = async (url, filename) => {
     document.body.removeChild(a)
     URL.revokeObjectURL(a.href)
   } catch {
-    // Fallback: open in new tab if CORS prevents direct download
     window.open(url, '_blank')
   }
 }
 
-// Empty receipt item
 const emptyItem = () => ({ itemName: '', quantity: 1, pricePerItem: 0 })
 
-// Individual request card
-function RequestCard({ req, onUpdate }) {
-  const [expanded,   setExpanded]   = useState(false)
-  const [notes,      setNotes]      = useState(req.ownerNotes || '')
-  const [statusLoad, setStatusLoad] = useState(false)
+function RequestCard({ req, onUpdate, onDelete }) {
+  const [expanded,     setExpanded]     = useState(false)
+  const [notes,        setNotes]        = useState(req.ownerNotes || '')
+  const [statusLoad,   setStatusLoad]   = useState(false)
+  const [deleteLoad,   setDeleteLoad]   = useState(false)
   const [receiptItems, setReceiptItems] = useState(
-    req.receipt?.items?.length
-      ? req.receipt.items.map(i => ({ ...i }))
-      : [emptyItem()]
+    req.receipt?.items?.length ? req.receipt.items.map(i => ({ ...i })) : [emptyItem()]
   )
   const [receiptNotes, setReceiptNotes] = useState(req.receipt?.notes || '')
   const [receiptLoad,  setReceiptLoad]  = useState(false)
-  const [activeTab,    setActiveTab]    = useState('details') // 'details' | 'receipt'
+  const [activeTab,    setActiveTab]    = useState('details')
 
   const grandTotal = receiptItems.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.pricePerItem)), 0)
 
-  // Status update 
   const updateStatus = async (newStatus) => {
     if (req.status === newStatus) return
     setStatusLoad(true)
@@ -65,7 +58,6 @@ function RequestCard({ req, onUpdate }) {
     }
   }
 
-  // Save notes separately 
   const saveNotes = async () => {
     try {
       await api.put(`/owner/requests/${req.requestId}/status`, { status: req.status, ownerNotes: notes })
@@ -75,7 +67,21 @@ function RequestCard({ req, onUpdate }) {
     }
   }
 
-  // Receipt builder 
+  // Delete single request 
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete request ${req.requestId} from ${req.customerName}? This cannot be undone.`)) return
+    setDeleteLoad(true)
+    try {
+      await api.delete(`/owner/requests/${req.requestId}`)
+      toast.success('Request deleted')
+      onDelete()
+    } catch {
+      toast.error('Delete failed')
+    } finally {
+      setDeleteLoad(false)
+    }
+  }
+
   const addItem = () => setReceiptItems(p => [...p, emptyItem()])
   const removeItem = (i) => setReceiptItems(p => p.filter((_, idx) => idx !== i))
   const updateItem = (i, k, v) => {
@@ -101,7 +107,7 @@ function RequestCard({ req, onUpdate }) {
         })),
         notes: receiptNotes
       })
-      toast.success('Receipt saved and visible to customer!')
+      toast.success('Receipt saved!')
       onUpdate()
     } catch {
       toast.error('Failed to save receipt')
@@ -112,11 +118,9 @@ function RequestCard({ req, onUpdate }) {
 
   return (
     <div className="bg-white rounded-2xl border shadow-sm overflow-hidden mb-4">
-      {/* Card Header (always visible) */}
-      <div
-        className="p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-gray-50 transition-colors"
-        onClick={() => setExpanded(p => !p)}
-      >
+      {/* Header */}
+      <div className="p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => setExpanded(p => !p)}>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <p className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">{req.requestId}</p>
@@ -130,10 +134,19 @@ function RequestCard({ req, onUpdate }) {
             <span>📅 {new Date(req.createdAt).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</span>
           </div>
         </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {req.receipt?.grandTotal > 0 && (
             <span className="font-display font-bold text-primary-700">₹{req.receipt.grandTotal}</span>
           )}
+          {/* Delete button */}
+          <button
+            onClick={e => { e.stopPropagation(); handleDelete() }}
+            disabled={deleteLoad}
+            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl border border-transparent hover:border-red-200 transition-all"
+            title="Delete this request"
+          >
+            <FiTrash2 size={15} />
+          </button>
           {expanded ? <FiChevronUp className="text-gray-400" /> : <FiChevronDown className="text-gray-400" />}
         </div>
       </div>
@@ -141,7 +154,6 @@ function RequestCard({ req, onUpdate }) {
       {/* Expanded Panel */}
       {expanded && (
         <div className="border-t bg-gray-50">
-          {/* Tab switcher */}
           <div className="flex border-b bg-white">
             {['details', 'receipt'].map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
@@ -153,11 +165,8 @@ function RequestCard({ req, onUpdate }) {
             ))}
           </div>
 
-          {/* Details Tab */}
           {activeTab === 'details' && (
             <div className="p-5 space-y-5">
-
-              {/* Uploaded file with download */}
               {req.printing?.fileUrl && (
                 <div className="bg-white rounded-xl border p-4">
                   <p className="text-xs font-bold text-gray-500 uppercase mb-3">📄 Uploaded Print File</p>
@@ -166,21 +175,19 @@ function RequestCard({ req, onUpdate }) {
                       className="inline-flex items-center gap-1.5 btn-outline text-xs">
                       <FiExternalLink size={13} /> View
                     </a>
-                    <button
-                      onClick={() => downloadFile(req.printing.fileUrl, `${req.requestId}-print-file`)}
+                    <button onClick={() => downloadFile(req.printing.fileUrl, `${req.requestId}-print-file`)}
                       className="inline-flex items-center gap-1.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors">
                       <FiDownload size={13} /> Download
                     </button>
                   </div>
                   <div className="text-xs text-gray-500 font-body space-y-0.5">
-                    <p>Size: <strong>{req.printing.size}</strong> &nbsp;·&nbsp; Qty: <strong>{req.printing.quantity}</strong></p>
-                    <p>Color: <strong className="capitalize">{req.printing.colorMode?.replace('_', ' ')}</strong> &nbsp;·&nbsp; Paper: <strong>{req.printing.paperType}</strong></p>
+                    <p>Size: <strong>{req.printing.size}</strong> · Qty: <strong>{req.printing.quantity}</strong></p>
+                    <p>Color: <strong className="capitalize">{req.printing.colorMode?.replace('_', ' ')}</strong> · Paper: <strong>{req.printing.paperType}</strong></p>
                     {req.printing.instructions && <p>Instructions: <span className="text-gray-700">{req.printing.instructions}</span></p>}
                   </div>
                 </div>
               )}
 
-              {/* Govt Form */}
               {req.govtForm?.formType && (
                 <div className="bg-white rounded-xl border p-4">
                   <p className="text-xs font-bold text-gray-500 uppercase mb-3">📝 Jan Seva Kendra Service</p>
@@ -216,7 +223,6 @@ function RequestCard({ req, onUpdate }) {
                 </div>
               )}
 
-              {/* Card Printing */}
               {req.cardPrinting?.category && (
                 <div className="bg-white rounded-xl border p-4">
                   <p className="text-xs font-bold text-gray-500 uppercase mb-2">🎴 Card Printing</p>
@@ -237,36 +243,27 @@ function RequestCard({ req, onUpdate }) {
                 </div>
               )}
 
-              {/* Owner Notes */}
               <div className="bg-white rounded-xl border p-4 space-y-3">
                 <p className="text-xs font-bold text-gray-500 uppercase">Owner Notes (visible to customer)</p>
-                <textarea
-                  className="input-field text-sm"
-                  rows={2}
-                  value={notes}
+                <textarea className="input-field text-sm" rows={2} value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="e.g. Please contact us to discuss printing details…"
-                />
+                  placeholder="e.g. Please contact us to discuss printing details…" />
                 <button onClick={saveNotes} className="btn-outline text-xs flex items-center gap-1.5">
                   <FiSave size={13} /> Save Notes
                 </button>
               </div>
 
-              {/* Status Update */}
               <div className="bg-white rounded-xl border p-4">
                 <p className="text-xs font-bold text-gray-500 uppercase mb-3">Update Order Status</p>
                 <div className="flex flex-wrap gap-2">
                   {STATUS_OPTIONS.map(s => (
-                    <button
-                      key={s.value}
-                      onClick={() => updateStatus(s.value)}
+                    <button key={s.value} onClick={() => updateStatus(s.value)}
                       disabled={statusLoad || req.status === s.value}
                       className={`text-xs font-bold px-4 py-2 rounded-xl border-2 transition-all ${
                         req.status === s.value
                           ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
                           : s.color
-                      }`}
-                    >
+                      }`}>
                       {s.label}
                     </button>
                   ))}
@@ -275,7 +272,6 @@ function RequestCard({ req, onUpdate }) {
             </div>
           )}
 
-          {/* Receipt Tab */}
           {activeTab === 'receipt' && (
             <div className="p-5 space-y-4">
               <div className="bg-white rounded-xl border p-5">
@@ -285,44 +281,26 @@ function RequestCard({ req, onUpdate }) {
                     <FiPlus size={13} /> Add Item
                   </button>
                 </div>
-
-                {/* Header */}
                 <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-400 uppercase border-b pb-2 mb-2">
                   <div className="col-span-5">Item Name</div>
                   <div className="col-span-2 text-center">Qty</div>
                   <div className="col-span-3 text-right">Price / Item (₹)</div>
                   <div className="col-span-2" />
                 </div>
-
-                {/* Items */}
                 <div className="space-y-2">
                   {receiptItems.map((item, i) => (
                     <div key={i} className="grid grid-cols-12 gap-2 items-center">
                       <div className="col-span-5">
-                        <input
-                          className="input-field text-xs py-2"
-                          placeholder="e.g. A4 Color Print"
-                          value={item.itemName}
-                          onChange={e => updateItem(i, 'itemName', e.target.value)}
-                        />
+                        <input className="input-field text-xs py-2" placeholder="e.g. A4 Color Print"
+                          value={item.itemName} onChange={e => updateItem(i, 'itemName', e.target.value)} />
                       </div>
                       <div className="col-span-2">
-                        <input
-                          type="number"
-                          min={1}
-                          className="input-field text-xs py-2 text-center"
-                          value={item.quantity}
-                          onChange={e => updateItem(i, 'quantity', e.target.value)}
-                        />
+                        <input type="number" min={1} className="input-field text-xs py-2 text-center"
+                          value={item.quantity} onChange={e => updateItem(i, 'quantity', e.target.value)} />
                       </div>
                       <div className="col-span-3">
-                        <input
-                          type="number"
-                          min={0}
-                          className="input-field text-xs py-2 text-right"
-                          value={item.pricePerItem}
-                          onChange={e => updateItem(i, 'pricePerItem', e.target.value)}
-                        />
+                        <input type="number" min={0} className="input-field text-xs py-2 text-right"
+                          value={item.pricePerItem} onChange={e => updateItem(i, 'pricePerItem', e.target.value)} />
                       </div>
                       <div className="col-span-2 flex items-center justify-between">
                         <span className="text-xs font-bold text-ink">
@@ -337,38 +315,22 @@ function RequestCard({ req, onUpdate }) {
                     </div>
                   ))}
                 </div>
-
-                {/* Grand total */}
                 <div className="flex justify-between items-center mt-4 pt-4 border-t-2 border-primary-200">
                   <span className="font-display font-bold text-ink text-lg">Grand Total</span>
                   <span className="font-display font-bold text-2xl text-primary-700">₹{grandTotal.toFixed(0)}</span>
                 </div>
-
-                {/* Notes */}
                 <div className="mt-4">
                   <label className="text-xs font-bold text-gray-500">Receipt Notes (optional)</label>
-                  <input
-                    className="input-field mt-1 text-sm"
-                    placeholder="e.g. Includes lamination charges"
-                    value={receiptNotes}
-                    onChange={e => setReceiptNotes(e.target.value)}
-                  />
+                  <input className="input-field mt-1 text-sm" placeholder="e.g. Includes lamination charges"
+                    value={receiptNotes} onChange={e => setReceiptNotes(e.target.value)} />
                 </div>
-
-                <button
-                  onClick={saveReceipt}
-                  disabled={receiptLoad}
-                  className="btn-primary w-full flex items-center justify-center gap-2 mt-4"
-                >
-                  {receiptLoad
-                    ? <><div className="loader w-4 h-4 border-2" /> Saving...</>
-                    : <><FiSave size={15} /> Save Receipt (Customer Can See This)</>
-                  }
+                <button onClick={saveReceipt} disabled={receiptLoad}
+                  className="btn-primary w-full flex items-center justify-center gap-2 mt-4">
+                  {receiptLoad ? <><div className="loader w-4 h-4 border-2" /> Saving...</> : <><FiSave size={15} /> Save Receipt</>}
                 </button>
-
                 {req.receipt?.generatedAt && (
                   <p className="text-xs text-center text-green-600 mt-2 font-body">
-                    ✓ Receipt last saved: {new Date(req.receipt.generatedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                    ✓ Last saved: {new Date(req.receipt.generatedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 )}
               </div>
@@ -383,13 +345,14 @@ function RequestCard({ req, onUpdate }) {
 // Main Page
 export default function RequestsPage() {
   const [searchParams] = useSearchParams()
-  const [requests,    setRequests]    = useState([])
-  const [loading,     setLoading]     = useState(true)
+  const [requests,     setRequests]     = useState([])
+  const [loading,      setLoading]      = useState(true)
   const [filterStatus, setFilterStatus] = useState(searchParams.get('status') || '')
   const [filterType,   setFilterType]   = useState('')
-  const [page,        setPage]        = useState(1)
-  const [totalPages,  setTotalPages]  = useState(1)
-  const [total,       setTotal]       = useState(0)
+  const [page,         setPage]         = useState(1)
+  const [totalPages,   setTotalPages]   = useState(1)
+  const [total,        setTotal]        = useState(0)
+  const [deleteAllLoad, setDeleteAllLoad] = useState(false)
 
   const loadRequests = async () => {
     setLoading(true)
@@ -410,6 +373,25 @@ export default function RequestsPage() {
 
   useEffect(() => { loadRequests() }, [filterStatus, filterType, page]) // eslint-disable-line
 
+  // Delete all (with current filters)
+  const handleDeleteAll = async () => {
+    const label = filterStatus ? `all "${filterStatus.replace(/_/g, ' ')}" requests` : 'ALL requests'
+    if (!window.confirm(`Are you sure you want to delete ${label}? This cannot be undone.`)) return
+    setDeleteAllLoad(true)
+    try {
+      const params = new URLSearchParams()
+      if (filterStatus) params.set('status', filterStatus)
+      if (filterType)   params.set('type', filterType)
+      const res = await api.delete(`/owner/requests?${params}`)
+      toast.success(res.data.message)
+      loadRequests()
+    } catch {
+      toast.error('Delete failed')
+    } finally {
+      setDeleteAllLoad(false)
+    }
+  }
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <OwnerSidebar />
@@ -420,9 +402,21 @@ export default function RequestsPage() {
               <h1 className="font-display text-3xl font-bold text-ink">All Requests</h1>
               <p className="text-gray-500 font-body text-sm mt-1">{total} total requests</p>
             </div>
-            <button onClick={loadRequests} className="btn-outline flex items-center gap-2">
-              🔄 Refresh
-            </button>
+            <div className="flex gap-2">
+              <button onClick={loadRequests} className="btn-outline flex items-center gap-2">
+                🔄 Refresh
+              </button>
+              {total > 0 && (
+                <button
+                  onClick={handleDeleteAll}
+                  disabled={deleteAllLoad}
+                  className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors"
+                >
+                  <FiTrash2 size={15} />
+                  {deleteAllLoad ? 'Deleting...' : filterStatus ? `Delete Filtered` : 'Delete All'}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Filters */}
@@ -461,7 +455,7 @@ export default function RequestsPage() {
           ) : (
             <>
               {requests.map(req => (
-                <RequestCard key={req._id} req={req} onUpdate={loadRequests} />
+                <RequestCard key={req._id} req={req} onUpdate={loadRequests} onDelete={loadRequests} />
               ))}
               {totalPages > 1 && (
                 <div className="flex justify-center items-center gap-3 mt-6">

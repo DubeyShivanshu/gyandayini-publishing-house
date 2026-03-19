@@ -45,7 +45,7 @@ export default function RateListPage() {
 
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-16">
 
-        {/* ── Rate List Images ── */}
+        {/* Rate List Images */}
         <section>
           <div className="text-center mb-8">
             <h2 className="section-title text-ink mb-2">📋 Price Charts</h2>
@@ -61,7 +61,7 @@ export default function RateListPage() {
               <p className="text-5xl mb-3">📄</p>
               <p className="font-display text-xl font-bold text-gray-400">Rate list not uploaded yet</p>
               <p className="text-gray-400 font-body mt-2">Please contact the owner for current prices.</p>
-              <a href="tel:+919876543210" className="inline-block mt-4 btn-primary">📞 Call for Rates</a>
+              <a href="tel:+917860172643" className="inline-block mt-4 btn-primary">📞 Call for Rates</a>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -95,7 +95,7 @@ export default function RateListPage() {
           )}
         </section>
 
-        {/* ── Demo / Sample Work ── */}
+        {/* Demo / Sample Work */}
         {demoImages.length > 0 && (
           <section>
             <div className="text-center mb-8">
@@ -125,7 +125,7 @@ export default function RateListPage() {
           </section>
         )}
 
-        {/* ── CTA ── */}
+        {/* CTA */}
         <section className="bg-gradient-to-r from-primary-600 to-primary-800 rounded-3xl p-10 text-center text-white">
           <h2 className="font-display text-3xl font-bold mb-3">Ready to Order?</h2>
           <p className="font-body text-primary-200 mb-6 max-w-md mx-auto">
@@ -135,14 +135,14 @@ export default function RateListPage() {
             <Link to="/printing" className="bg-white text-primary-700 font-bold py-3 px-8 rounded-xl hover:bg-primary-50 transition-colors">
               🖨️ Place Print Order
             </Link>
-            <a href="tel:+919876543210" className="bg-white/10 border border-white/30 text-white font-bold py-3 px-8 rounded-xl hover:bg-white/20 transition-colors">
+            <a href="tel:+917860172643" className="bg-white/10 border border-white/30 text-white font-bold py-3 px-8 rounded-xl hover:bg-white/20 transition-colors">
               📞 Call for Quote
             </a>
           </div>
         </section>
       </div>
 
-      {/* ── Lightbox ── */}
+      {/* Lightbox */}
       {lightbox && (
         <div
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"

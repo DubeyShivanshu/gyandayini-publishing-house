@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom'
 import OwnerSidebar from '../../components/owner/OwnerSidebar.jsx'
 import StatusBadge from '../../components/common/StatusBadge.jsx'
 import api from '../../utils/api.js'
+import toast from 'react-hot-toast'
+import { FiTrash2 } from 'react-icons/fi'
 
 const STAT_CARDS = [
-  { status: 'pending',          label: 'Pending',           bg: 'bg-yellow-50 border-yellow-200', text: 'text-yellow-700', icon: '⏳' },
-  { status: 'payment_received', label: 'Payment Received',  bg: 'bg-blue-50 border-blue-200',    text: 'text-blue-700',   icon: '✅' },
-  { status: 'completed',        label: 'Completed',         bg: 'bg-green-50 border-green-200',  text: 'text-green-700',  icon: '🎉' },
+  { status: 'pending',          label: 'Pending',          bg: 'bg-yellow-50 border-yellow-200', text: 'text-yellow-700', icon: '⏳' },
+  { status: 'payment_received', label: 'Payment Received', bg: 'bg-blue-50 border-blue-200',    text: 'text-blue-700',   icon: '✅' },
+  { status: 'completed',        label: 'Completed',        bg: 'bg-green-50 border-green-200',  text: 'text-green-700',  icon: '🎉' },
 ]
 
 export default function DashboardHomePage() {
@@ -17,27 +19,38 @@ export default function DashboardHomePage() {
   const [recentRequests, setRecentRequests] = useState([])
   const [loading,        setLoading]        = useState(true)
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [statsRes, reqRes] = await Promise.all([
-          api.get('/owner/requests/stats'),
-          api.get('/owner/requests?limit=6')
-        ])
-        setStats(statsRes.data.stats)
-        setTotal(statsRes.data.total)
-        setToday(statsRes.data.today)
-        setRecentRequests(reqRes.data.requests)
-      } catch (err) {
-        console.error('Dashboard load error:', err)
-      } finally {
-        setLoading(false)
-      }
+  const load = async () => {
+    try {
+      const [statsRes, reqRes] = await Promise.all([
+        api.get('/owner/requests/stats'),
+        api.get('/owner/requests?limit=6')
+      ])
+      setStats(statsRes.data.stats)
+      setTotal(statsRes.data.total)
+      setToday(statsRes.data.today)
+      setRecentRequests(reqRes.data.requests)
+    } catch (err) {
+      console.error('Dashboard load error:', err)
+    } finally {
+      setLoading(false)
     }
-    load()
-  }, [])
+  }
+
+  useEffect(() => { load() }, [])
 
   const getCount = (status) => stats.find(s => s._id === status)?.count || 0
+
+  // Delete single request from dashboard
+  const handleDeleteRequest = async (requestId, customerName) => {
+    if (!window.confirm(`Delete request from ${customerName}? This cannot be undone.`)) return
+    try {
+      await api.delete(`/owner/requests/${requestId}`)
+      toast.success('Request deleted')
+      load()
+    } catch {
+      toast.error('Delete failed')
+    }
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -73,11 +86,8 @@ export default function DashboardHomePage() {
               {/* 3-Step Status Breakdown */}
               <div className="grid grid-cols-3 gap-4 mb-8">
                 {STAT_CARDS.map(card => (
-                  <Link
-                    key={card.status}
-                    to={`/owner/requests?status=${card.status}`}
-                    className={`rounded-2xl p-5 shadow-sm border ${card.bg} hover:shadow-md transition-shadow`}
-                  >
+                  <Link key={card.status} to={`/owner/requests?status=${card.status}`}
+                    className={`rounded-2xl p-5 shadow-sm border ${card.bg} hover:shadow-md transition-shadow`}>
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-2xl">{card.icon}</span>
                       <p className={`font-display font-bold text-3xl ${card.text}`}>{getCount(card.status)}</p>
@@ -107,11 +117,21 @@ export default function DashboardHomePage() {
                             {req.type?.replace(/_/g, ' ')} · {req.customerPhone}
                           </p>
                         </div>
-                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                          <StatusBadge status={req.status} size="sm" />
-                          <p className="text-xs text-gray-400 font-body">
-                            {new Date(req.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-                          </p>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="flex flex-col items-end gap-1">
+                            <StatusBadge status={req.status} size="sm" />
+                            <p className="text-xs text-gray-400 font-body">
+                              {new Date(req.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                            </p>
+                          </div>
+                          {/* Delete button */}
+                          <button
+                            onClick={() => handleDeleteRequest(req.requestId, req.customerName)}
+                            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl border border-transparent hover:border-red-200 transition-all"
+                            title="Delete request"
+                          >
+                            <FiTrash2 size={14} />
+                          </button>
                         </div>
                       </div>
                     ))}
