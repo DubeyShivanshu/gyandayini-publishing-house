@@ -120,7 +120,10 @@ export default function OwnerSidebar() {
           className="lg:hidden fixed inset-0 z-50 flex"
           onClick={closeSidebar}
         >
+          {/* Dark backdrop */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+          {/* Drawer panel */}
           <div
             className="relative w-72 max-w-[85vw] bg-ink text-cream h-full shadow-2xl flex flex-col"
             onClick={e => e.stopPropagation()}
@@ -130,8 +133,8 @@ export default function OwnerSidebar() {
         </div>
       )}
 
-      {/* ── Mobile spacer — exact height of top bar so content starts below it ── */}
-      <div className="lg:hidden" style={{ height: '56px', flexShrink: 0, width: '100%' }} />
+      {/* ── Mobile top bar spacer (pushes page content down) ── */}
+      <div className="lg:hidden h-14 flex-shrink-0" />
     </>
   )
 }
